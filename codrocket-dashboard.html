@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CodRocket — Car Shipping Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+  :root {
+    --red: #E8332A;
+    --red-dark: #B8271F;
+    --red-light: #FFF0EF;
+    --red-mid: #FDDBD9;
+    --navy: #0D1B2A;
+    --navy-mid: #1A2E42;
+    --slate: #2C3E50;
+    --muted: #8A96A3;
+    --border: #E2E8EE;
+    --bg: #F5F7FA;
+    --surface: #FFFFFF;
+    --text: #0D1B2A;
+    --text-2: #4A5568;
+    --text-3: #8A96A3;
+    --success-bg: #EDFAF3;
+    --success: #1A8C4E;
+    --warning-bg: #FFF8E6;
+    --warning: #B07A00;
+    --info-bg: #EBF4FF;
+    --info: #1565C0;
+    --danger-bg: #FFF0EF;
+    --danger: #C62828;
+    --pending-bg: #F3F0FF;
+    --pending: #5E35B1;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 230px;
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .logo-rocket {
+    width: 36px; height: 36px;
+    background: var(--red);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-rocket i { color: #fff; font-size: 20px; }
+  .logo-name { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .logo-sub { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 400; }
+  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 8px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 8px;
+    font-size: 13.5px; color: rgba(255,255,255,0.55);
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+    position: relative;
+  }
+  .nav-item i { font-size: 17px; }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: rgba(232,51,42,0.2); color: #fff; }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 18px; background: var(--red); border-radius: 2px;
+  }
+  .nav-badge {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 10px; font-weight: 600; padding: 2px 6px;
+    border-radius: 10px; min-width: 18px; text-align: center;
+  }
+  .sidebar-bottom { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; }
+  .sidebar-user:hover { background: rgba(255,255,255,0.07); }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), #FF6B5B);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .user-name { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 500; }
+  .user-role { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+  /* MAIN */
+  .main { margin-left: 230px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-left { display: flex; flex-direction: column; }
+  .topbar-title { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600; color: var(--text); }
+  .topbar-date { font-size: 12px; color: var(--text-3); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .tb-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; color: var(--text-2); cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: all 0.15s;
+  }
+  .tb-btn:hover { background: var(--bg); border-color: #CDD5DE; }
+  .tb-btn-primary { background: var(--red); color: #fff; border-color: var(--red); font-weight: 500; }
+  .tb-btn-primary:hover { background: var(--red-dark); border-color: var(--red-dark); }
+  .tb-btn i { font-size: 15px; }
+  .notif-dot { position: relative; }
+  .notif-dot::after {
+    content: ''; position: absolute; top: 6px; right: 14px;
+    width: 7px; height: 7px; background: var(--red); border-radius: 50%;
+    border: 1.5px solid var(--surface);
+  }
+
+  /* CONTENT */
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* METRICS */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .metric-card {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 1px solid var(--border); padding: 18px 20px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .metric-card::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 60px; height: 60px; border-radius: 0 0 0 60px;
+    opacity: 0.06;
+  }
+  .metric-card.red::after { background: var(--red); }
+  .metric-card.blue::after { background: #1565C0; }
+  .metric-card.green::after { background: #1A8C4E; }
+  .metric-card.amber::after { background: #B07A00; }
+  .metric-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; font-size: 19px;
+  }
+  .metric-icon.red { background: var(--red-light); color: var(--red); }
+  .metric-icon.blue { background: var(--info-bg); color: var(--info); }
+  .metric-icon.green { background: var(--success-bg); color: var(--success); }
+  .metric-icon.amber { background: var(--warning-bg); color: var(--warning); }
+  .metric-label { font-size: 12px; color: var(--text-3); margin-bottom: 4px; font-weight: 500; }
+  .metric-val { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+  .metric-sub { font-size: 12px; color: var(--text-3); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .metric-sub .up { color: var(--success); font-weight: 500; }
+  .metric-sub .dn { color: var(--danger); font-weight: 500; }
+
+  /* LAYOUT ROW */
+  .layout-row { display: grid; grid-template-columns: 1fr 300px; gap: 16px; margin-bottom: 22px; }
+
+  /* CHART CARD */
+  .card {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .card-body { padding: 20px; }
+
+  /* BAR CHART */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-wrap { width: 100%; display: flex; gap: 3px; align-items: flex-end; height: 100px; }
+  .bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    transition: opacity 0.15s; cursor: pointer;
+  }
+  .bar:hover { opacity: 0.75; }
+  .bar-label { font-size: 10px; color: var(--text-3); }
+  .chart-legend { display: flex; gap: 14px; padding: 12px 20px; border-top: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* DONUT */
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+  .donut-svg { width: 140px; height: 140px; }
+  .donut-list { width: 100%; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .donut-row { display: flex; align-items: center; gap: 8px; }
+  .donut-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .donut-label { font-size: 12px; color: var(--text-2); flex: 1; }
+  .donut-pct { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* ROUTE CARDS */
+  .routes-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .route-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .route-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .route-flags { font-size: 22px; display: flex; align-items: center; gap: 4px; }
+  .route-arrow { color: var(--text-3); font-size: 14px; }
+  .route-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .route-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .route-detail { font-size: 11px; color: var(--text-3); }
+  .route-stats { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .route-stat-val { font-size: 16px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .route-stat-label { font-size: 10px; color: var(--text-3); }
+
+  /* ORDERS TABLE */
+  .table-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+  .table-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 7px 12px; background: var(--bg); flex: 1; min-width: 180px;
+  }
+  .search-box i { color: var(--text-3); font-size: 15px; }
+  .search-box input { border: none; outline: none; background: transparent; font-size: 13px; color: var(--text); width: 100%; font-family: 'Inter', sans-serif; }
+  .search-box input::placeholder { color: var(--text-3); }
+  .filter-select {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 7px 10px; font-size: 13px; color: var(--text-2);
+    background: var(--surface); cursor: pointer; outline: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .tabs { display: flex; gap: 2px; background: var(--bg); border-radius: var(--radius); padding: 3px; }
+  .tab {
+    padding: 5px 12px; border-radius: 7px; font-size: 12.5px;
+    color: var(--text-3); cursor: pointer; transition: all 0.15s; border: none; background: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); font-weight: 500; }
+  .tab:hover:not(.active) { color: var(--text-2); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead th {
+    font-size: 11px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 10px 14px; text-align: left;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 12px 14px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #FAFBFC; }
+  .order-id { font-weight: 600; color: var(--red); cursor: pointer; font-size: 12.5px; }
+  .order-id:hover { text-decoration: underline; }
+  .vehicle-cell { display: flex; align-items: center; gap: 10px; }
+  .vehicle-thumb {
+    width: 34px; height: 26px; border-radius: 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .vehicle-thumb i { font-size: 16px; color: var(--text-3); }
+  .vehicle-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .vehicle-type { font-size: 11px; color: var(--text-3); }
+  .flag-cell { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .flag { font-size: 16px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge i { font-size: 11px; }
+  .b-transit { background: var(--info-bg); color: var(--info); }
+  .b-customs { background: var(--warning-bg); color: var(--warning); }
+  .b-delivered { background: var(--success-bg); color: var(--success); }
+  .b-pending { background: var(--pending-bg); color: var(--pending); }
+  .b-delayed { background: var(--danger-bg); color: var(--danger); }
+  .progress-cell { min-width: 80px; }
+  .prog-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+  .prog-bar { height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+  .prog-fill.transit { background: var(--info); }
+  .prog-fill.customs { background: var(--warning); }
+  .prog-fill.delivered { background: var(--success); }
+  .prog-fill.pending { background: #B0A4E8; }
+  .prog-fill.delayed { background: var(--danger); }
+  .eta-cell { font-size: 12px; }
+  .eta-date { font-weight: 500; color: var(--text); }
+  .eta-days { font-size: 11px; color: var(--text-3); }
+  .action-btns { display: flex; gap: 4px; }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    border: 1px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-3); transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--text); border-color: #CDD5DE; }
+  .icon-btn i { font-size: 13px; }
+  .value-cell { font-size: 13px; font-weight: 500; }
+  .table-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--border); }
+  .page-info { font-size: 12px; color: var(--text-3); }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn {
+    width: 30px; height: 30px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; font-size: 12px; color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; font-family: 'Inter', sans-serif;
+  }
+  .page-btn.active { background: var(--red); color: #fff; border-color: var(--red); font-weight: 600; }
+  .page-btn:hover:not(.active) { background: var(--bg); }
+
+  /* ALERTS PANEL */
+  .alerts-row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 22px; }
+  .alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .alert-icon.warn { background: var(--warning-bg); color: var(--warning); }
+  .alert-icon.err { background: var(--danger-bg); color: var(--danger); }
+  .alert-icon.info { background: var(--info-bg); color: var(--info); }
+  .alert-icon.ok { background: var(--success-bg); color: var(--success); }
+  .alert-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .alert-text strong { font-weight: 600; }
+  .alert-time { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+  .quick-stat { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .quick-stat:last-child { border-bottom: none; }
+  .qs-label { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+  .qs-label i { font-size: 15px; color: var(--text-3); }
+  .qs-val { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-rocket"><i class="ti ti-rocket"></i></div>
+    <div>
+      <div class="logo-name">CodRocket</div>
+      <div class="logo-sub">Import Cars · China to World</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Operations</div>
+    <a class="nav-item active" href="#">
+      <i class="ti ti-layout-dashboard"></i> Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-file-invoice"></i> Orders
+      <span class="nav-badge">28</span>
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-ship"></i> Shipments
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-map-pin"></i> Live tracking
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-clipboard-check"></i> Customs
+      <span class="nav-badge">5</span>
+    </a>
+
+    <div class="nav-section-label">Business</div>
+    <a class="nav-item" href="#">
+      <i class="ti ti-users"></i> Customers
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-car"></i> Inventory
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-route"></i> Routes
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-chart-bar"></i> Analytics
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-receipt"></i> Invoices
+    </a>
+
+    <div class="nav-section-label">System</div>
+    <a class="nav-item" href="#">
+      <i class="ti ti-bell"></i> Alerts
+      <span class="nav-badge">3</span>
+    </a>
+    <a class="nav-item" href="#">
+      <i class="ti ti-settings"></i> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-avatar">CR</div>
+      <div>
+        <div class="user-name">CodRocket Admin</div>
+        <div class="user-role">Operations Manager</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Car Shipping Dashboard</div>
+      <div class="topbar-date" id="topDate"></div>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn notif-dot"><i class="ti ti-bell"></i></button>
+      <button class="tb-btn"><i class="ti ti-refresh"></i> Refresh</button>
+      <button class="tb-btn"><i class="ti ti-download"></i> Export</button>
+      <button class="tb-btn tb-btn-primary"><i class="ti ti-plus"></i> New order</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card red">
+        <div class="metric-icon red"><i class="ti ti-file-invoice"></i></div>
+        <div class="metric-label">Total orders</div>
+        <div class="metric-val">284</div>
+        <div class="metric-sub"><span class="up">↑ 18%</span> vs last month</div>
+      </div>
+      <div class="metric-card blue">
+        <div class="metric-icon blue"><i class="ti ti-ship"></i></div>
+        <div class="metric-label">In transit</div>
+        <div class="metric-val">67</div>
+        <div class="metric-sub"><i class="ti ti-point-filled" style="font-size:10px;color:#1565C0"></i> 12 departing today</div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-icon green"><i class="ti ti-circle-check"></i></div>
+        <div class="metric-label">Delivered</div>
+        <div class="metric-val">198</div>
+        <div class="metric-sub"><span class="up">↑ 9</span> this week</div>
+      </div>
+      <div class="metric-card amber">
+        <div class="metric-icon amber"><i class="ti ti-alert-triangle"></i></div>
+        <div class="metric-label">Delayed / Issues</div>
+        <div class="metric-val">19</div>
+        <div class="metric-sub"><span class="dn">● 3</span> need action</div>
+      </div>
+    </div>
+
+    <!-- CHART + DONUT ROW -->
+    <div class="layout-row">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Shipments per month</div>
+            <div class="card-sub">Orders shipped vs delivered — 2024</div>
+          </div>
+          <select class="filter-select" style="font-size:12px;padding:5px 8px">
+            <option>2024</option><option>2023</option>
+          </select>
+        </div>
+        <div class="card-body" style="padding-bottom:0">
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#E8332A"></div> Shipped</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1A8C4E"></div> Delivered</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">By destination</div>
+            <div class="card-sub">Market share</div>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#F5F7FA" stroke-width="22"/>
+            <circle id="d1" cx="70" cy="70" r="52" fill="none" stroke="#E8332A" stroke-width="22" stroke-dasharray="98 228" stroke-dashoffset="0" transform="rotate(-90 70 70)"/>
+            <circle id="d2" cx="70" cy="70" r="52" fill="none" stroke="#1565C0" stroke-width="22" stroke-dasharray="72 228" stroke-dashoffset="-98" transform="rotate(-90 70 70)"/>
+            <circle id="d3" cx="70" cy="70" r="52" fill="none" stroke="#1A8C4E" stroke-width="22" stroke-dasharray="50 228" stroke-dashoffset="-170" transform="rotate(-90 70 70)"/>
+            <circle id="d4" cx="70" cy="70" r="52" fill="none" stroke="#B07A00" stroke-width="22" stroke-dasharray="8 228" stroke-dashoffset="-220" transform="rotate(-90 70 70)"/>
+            <text x="70" y="65" text-anchor="middle" font-size="22" font-weight="700" font-family="Space Grotesk,sans-serif" fill="#0D1B2A">6</text>
+            <text x="70" y="80" text-anchor="middle" font-size="10" fill="#8A96A3">markets</text>
+          </svg>
+          <div class="donut-list">
+            <div class="donut-row"><div class="donut-color" style="background:#E8332A"></div><div class="donut-label">🇦🇪 Dubai / UAE</div><div class="donut-pct">43%</div></div>
+            <div class="donut-row"><div class="donut-color" style="background:#1565C0"></div><div class="donut-label">🇳🇬 Lagos / Nigeria</div><div class="donut-pct">32%</div></div>
+            <div class="donut-row"><div class="donut-color" style="background:#1A8C4E"></div><div class="donut-label">🇰🇪 Nairobi / Kenya</div><div class="donut-pct">22%</div></div>
+            <div class="donut-row"><div class="donut-color" style="background:#B07A00"></div><div class="donut-label">🌍 Others</div><div class="donut-pct">3%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP ROUTES -->
+    <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text)">Top shipping routes</div>
+      <button class="tb-btn" style="font-size:12px;padding:5px 10px">View all routes</button>
+    </div>
+    <div class="routes-row">
+      <div class="route-card">
+        <div class="route-header">
+          <div class="route-flags">🇨🇳 <span class="route-arrow"><i class="ti ti-arrow-right"></i></span> 🇦🇪</div>
+          <span class="badge b-transit">Active</span>
+        </div>
+        <div class="route-name">Shanghai → Dubai</div>
+        <div class="route-detail">Via Port Jebel Ali · 22 days avg</div>
+        <div class="route-stats">
+          <div><div class="route-stat-val">124</div><div class="route-stat-label">Total orders</div></div>
+          <div><div class="route-stat-val">18</div><div class="route-stat-label">In transit</div></div>
+          <div><div class="route-stat-val">$3,200</div><div class="route-stat-label">Avg cost</div></div>
+        </div>
+      </div>
+      <div class="route-card">
+        <div class="route-header">
+          <div class="route-flags">🇨🇳 <span class="route-arrow"><i class="ti ti-arrow-right"></i></span> 🇳🇬</div>
+          <span class="badge b-transit">Active</span>
+        </div>
+        <div class="route-name">Guangzhou → Lagos</div>
+        <div class="route-detail">Via Port Apapa · 28 days avg</div>
+        <div class="route-stats">
+          <div><div class="route-stat-val">91</div><div class="route-stat-label">Total orders</div></div>
+          <div><div class="route-stat-val">24</div><div class="route-stat-label">In transit</div></div>
+          <div><div class="route-stat-val">$2,850</div><div class="route-stat-label">Avg cost</div></div>
+        </div>
+      </div>
+      <div class="route-card">
+        <div class="route-header">
+          <div class="route-flags">🇨🇳 <span class="route-arrow"><i class="ti ti-arrow-right"></i></span> 🇰🇪</div>
+          <span class="badge b-customs">Customs delay</span>
+        </div>
+        <div class="route-name">Tianjin → Nairobi</div>
+        <div class="route-detail">Via Port Mombasa · 32 days avg</div>
+        <div class="route-stats">
+          <div><div class="route-stat-val">69</div><div class="route-stat-label">Total orders</div></div>
+          <div><div class="route-stat-val">12</div><div class="route-stat-label">In transit</div></div>
+          <div><div class="route-stat-val">$3,100</div><div class="route-stat-label">Avg cost</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS + QUICK STATS ROW -->
+    <div class="alerts-row">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Recent alerts</div>
+            <div class="card-sub">Issues requiring attention</div>
+          </div>
+          <button class="tb-btn" style="font-size:12px;padding:5px 10px">Mark all read</button>
+        </div>
+        <div class="card-body" style="padding-top:4px;padding-bottom:4px">
+          <div class="alert-item">
+            <div class="alert-icon err"><i class="ti ti-alert-circle"></i></div>
+            <div><div class="alert-text"><strong>CR-2024-005 (AITO M7)</strong> delayed at Mombasa port — customs hold placed.</div><div class="alert-time">2 hours ago</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon warn"><i class="ti ti-clock-exclamation"></i></div>
+            <div><div class="alert-text"><strong>CR-2024-027 (Avatr 11)</strong> ETA pushed back 7 days due to vessel congestion.</div><div class="alert-time">5 hours ago</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon info"><i class="ti ti-ship"></i></div>
+            <div><div class="alert-text"><strong>12 vehicles</strong> loaded on MSC Apollonia — departed Shanghai this morning.</div><div class="alert-time">8 hours ago</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon ok"><i class="ti ti-circle-check"></i></div>
+            <div><div class="alert-text"><strong>CR-2024-017 (Nio ES8)</strong> successfully delivered to customer in Riyadh.</div><div class="alert-time">Yesterday</div></div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon warn"><i class="ti ti-file-dollar"></i></div>
+            <div><div class="alert-text"><strong>Invoice #INV-0821</strong> overdue by 3 days — customer in Dubai.</div><div class="alert-time">2 days ago</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Quick stats</div>
+        </div>
+        <div class="card-body" style="padding-top:6px;padding-bottom:6px">
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-cash"></i> Revenue (MTD)</div>
+            <div class="qs-val">$1.24M</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-car"></i> Cars shipped YTD</div>
+            <div class="qs-val">284</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-clock"></i> Avg transit time</div>
+            <div class="qs-val">26 days</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-thumb-up"></i> On-time rate</div>
+            <div class="qs-val">93.3%</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-users"></i> Active customers</div>
+            <div class="qs-val">142</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-clipboard-check"></i> Customs clearance</div>
+            <div class="qs-val">4.2 days</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-world"></i> Countries served</div>
+            <div class="qs-val">6</div>
+          </div>
+          <div class="quick-stat">
+            <div class="qs-label"><i class="ti ti-building"></i> Port partners</div>
+            <div class="qs-val">8</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text)">All orders</div>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="search-box">
+          <i class="ti ti-search"></i>
+          <input type="text" placeholder="Search order ID, vehicle, destination..." id="searchInput" oninput="renderTable()" />
+        </div>
+        <select class="filter-select" id="statusFilter" onchange="renderTable()">
+          <option value="">All statuses</option>
+          <option value="transit">In transit</option>
+          <option value="customs">Customs</option>
+          <option value="delivered">Delivered</option>
+          <option value="pending">Pending</option>
+          <option value="delayed">Delayed</option>
+        </select>
+        <select class="filter-select" id="destFilter" onchange="renderTable()">
+          <option value="">All destinations</option>
+          <option>Dubai</option><option>Lagos</option><option>Bogotá</option>
+          <option>Sydney</option><option>Nairobi</option><option>Riyadh</option>
+        </select>
+        <select class="filter-select" id="originFilter" onchange="renderTable()">
+          <option value="">All origins</option>
+          <option>Shanghai</option><option>Guangzhou</option>
+          <option>Shenzhen</option><option>Tianjin</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:100px">Order ID</th>
+              <th style="width:160px">Vehicle</th>
+              <th style="width:95px">Origin 🇨🇳</th>
+              <th style="width:100px">Destination</th>
+              <th style="width:115px">Status</th>
+              <th style="width:95px">Progress</th>
+              <th style="width:85px">ETA</th>
+              <th style="width:95px">Value</th>
+              <th style="width:70px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <div class="page-info" id="pageInfo"></div>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// Date
+const now = new Date();
+document.getElementById('topDate').textContent = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// Bar chart data
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const shipped = [14,18,22,19,28,31,26,24,30,27,22,23];
+const delivered = [10,15,20,17,25,28,22,21,27,24,19,20];
+const maxVal = Math.max(...shipped);
+const bc = document.getElementById('barChart');
+months.forEach((m,i) => {
+  const g = document.createElement('div');
+  g.className = 'bar-group';
+  const sh = Math.round((shipped[i]/maxVal)*100);
+  const de = Math.round((delivered[i]/maxVal)*100);
+  g.innerHTML = `<div class="bar-wrap">
+    <div class="bar" style="height:${sh}%;background:var(--red);opacity:0.85" title="Shipped: ${shipped[i]}"></div>
+    <div class="bar" style="height:${de}%;background:#1A8C4E;opacity:0.75" title="Delivered: ${delivered[i]}"></div>
+  </div><div class="bar-label">${m}</div>`;
+  bc.appendChild(g);
+});
+
+// Orders data
+const orders = [
+  {id:'CR-2024-001',vehicle:'BYD Han EV',type:'sedan',origin:'Shanghai',dest:'Dubai',status:'transit',progress:72,eta:'Jun 24',value:'$28,500'},
+  {id:'CR-2024-002',vehicle:'Nio ET7',type:'sedan',origin:'Guangzhou',dest:'Nairobi',status:'customs',progress:88,eta:'Jun 20',value:'$55,000'},
+  {id:'CR-2024-003',vehicle:'Li Auto L9',type:'suv',origin:'Shanghai',dest:'Lagos',status:'delivered',progress:100,eta:'Jun 12',value:'$42,000'},
+  {id:'CR-2024-004',vehicle:'BYD Atto 3',type:'suv',origin:'Shenzhen',dest:'Bogotá',status:'transit',progress:45,eta:'Jul 3',value:'$31,200'},
+  {id:'CR-2024-005',vehicle:'AITO M7',type:'suv',origin:'Tianjin',dest:'Riyadh',status:'delayed',progress:30,eta:'Jul 10',value:'$38,900'},
+  {id:'CR-2024-006',vehicle:'Zeekr 001',type:'wagon',origin:'Shanghai',dest:'Sydney',status:'transit',progress:60,eta:'Jun 28',value:'$47,500'},
+  {id:'CR-2024-007',vehicle:'Hongqi H9',type:'sedan',origin:'Tianjin',dest:'Dubai',status:'delivered',progress:100,eta:'Jun 10',value:'$62,000'},
+  {id:'CR-2024-008',vehicle:'GAC Aion S',type:'sedan',origin:'Guangzhou',dest:'Lagos',status:'customs',progress:91,eta:'Jun 19',value:'$24,800'},
+  {id:'CR-2024-009',vehicle:'BYD Tang',type:'suv',origin:'Shenzhen',dest:'Nairobi',status:'pending',progress:10,eta:'Jul 20',value:'$39,500'},
+  {id:'CR-2024-010',vehicle:'Chery Tiggo 8',type:'suv',origin:'Shanghai',dest:'Bogotá',status:'transit',progress:55,eta:'Jun 30',value:'$22,300'},
+  {id:'CR-2024-011',vehicle:'Xpeng P7',type:'sedan',origin:'Guangzhou',dest:'Riyadh',status:'delivered',progress:100,eta:'Jun 8',value:'$44,000'},
+  {id:'CR-2024-012',vehicle:'BYD Sea Lion 6',type:'suv',origin:'Shanghai',dest:'Sydney',status:'delayed',progress:20,eta:'Jul 15',value:'$33,200'},
+  {id:'CR-2024-013',vehicle:'Wuling Starlight',type:'sedan',origin:'Tianjin',dest:'Dubai',status:'transit',progress:38,eta:'Jul 5',value:'$19,800'},
+  {id:'CR-2024-014',vehicle:'Leapmotor C11',type:'suv',origin:'Shenzhen',dest:'Lagos',status:'customs',progress:95,eta:'Jun 18',value:'$28,600'},
+  {id:'CR-2024-015',vehicle:'BYD Han EV',type:'sedan',origin:'Guangzhou',dest:'Nairobi',status:'transit',progress:80,eta:'Jun 22',value:'$28,500'},
+  {id:'CR-2024-016',vehicle:'Lynk & Co 08',type:'suv',origin:'Shanghai',dest:'Bogotá',status:'pending',progress:5,eta:'Aug 1',value:'$36,000'},
+  {id:'CR-2024-017',vehicle:'Nio ES8',type:'suv',origin:'Tianjin',dest:'Riyadh',status:'delivered',progress:100,eta:'Jun 5',value:'$65,000'},
+  {id:'CR-2024-018',vehicle:'BAIC Arcfox',type:'sedan',origin:'Guangzhou',dest:'Dubai',status:'transit',progress:65,eta:'Jun 26',value:'$31,500'},
+  {id:'CR-2024-019',vehicle:'Changan Deepal',type:'sedan',origin:'Shanghai',dest:'Sydney',status:'delayed',progress:42,eta:'Jul 8',value:'$27,900'},
+  {id:'CR-2024-020',vehicle:'BYD Seal',type:'sedan',origin:'Shenzhen',dest:'Lagos',status:'transit',progress:70,eta:'Jun 25',value:'$30,100'},
+  {id:'CR-2024-021',vehicle:'Haval H6',type:'suv',origin:'Tianjin',dest:'Nairobi',status:'delivered',progress:100,eta:'Jun 3',value:'$26,000'},
+  {id:'CR-2024-022',vehicle:'Xpeng G9',type:'suv',origin:'Guangzhou',dest:'Dubai',status:'customs',progress:85,eta:'Jun 21',value:'$52,000'},
+  {id:'CR-2024-023',vehicle:'BYD Dolphin',type:'hatch',origin:'Shanghai',dest:'Bogotá',status:'transit',progress:50,eta:'Jul 2',value:'$18,500'},
+  {id:'CR-2024-024',vehicle:'Li Auto L8',type:'suv',origin:'Shenzhen',dest:'Riyadh',status:'pending',progress:0,eta:'Aug 5',value:'$45,000'},
+  {id:'CR-2024-025',vehicle:'Zeekr 009',type:'van',origin:'Tianjin',dest:'Sydney',status:'transit',progress:33,eta:'Jul 7',value:'$58,000'},
+  {id:'CR-2024-026',vehicle:'BYD Yuan Plus',type:'suv',origin:'Guangzhou',dest:'Lagos',status:'delivered',progress:100,eta:'Jun 1',value:'$22,000'},
+  {id:'CR-2024-027',vehicle:'Avatr 11',type:'suv',origin:'Shanghai',dest:'Dubai',status:'delayed',progress:15,eta:'Jul 18',value:'$49,500'},
+  {id:'CR-2024-028',vehicle:'Voyah Free',type:'suv',origin:'Tianjin',dest:'Nairobi',status:'transit',progress:44,eta:'Jul 4',value:'$41,000'},
+];
+
+const destFlags={Dubai:'🇦🇪',Lagos:'🇳🇬',Bogotá:'🇨🇴',Sydney:'🇦🇺',Nairobi:'🇰🇪',Riyadh:'🇸🇦'};
+const badgeMap={
+  transit:'<span class="badge b-transit"><i class="ti ti-ship"></i> In transit</span>',
+  customs:'<span class="badge b-customs"><i class="ti ti-clipboard-check"></i> Customs</span>',
+  delivered:'<span class="badge b-delivered"><i class="ti ti-check"></i> Delivered</span>',
+  pending:'<span class="badge b-pending"><i class="ti ti-clock"></i> Pending</span>',
+  delayed:'<span class="badge b-delayed"><i class="ti ti-alert-triangle"></i> Delayed</span>',
+};
+
+let page = 1;
+const perPage = 10;
+
+function getFiltered() {
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const st=document.getElementById('statusFilter').value;
+  const ds=document.getElementById('destFilter').value;
+  const or=document.getElementById('originFilter').value;
+  return orders.filter(o=>{
+    if(st && o.status!==st) return false;
+    if(ds && o.dest!==ds) return false;
+    if(or && o.origin!==or) return false;
+    if(q && !o.id.toLowerCase().includes(q) && !o.vehicle.toLowerCase().includes(q) && !o.dest.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderTable() {
+  const filtered=getFiltered();
+  const total=filtered.length;
+  const totalPages=Math.max(1,Math.ceil(total/perPage));
+  if(page>totalPages) page=totalPages;
+  const slice=filtered.slice((page-1)*perPage,page*perPage);
+  document.getElementById('tableBody').innerHTML=slice.map(o=>`
+    <tr>
+      <td><span class="order-id">${o.id}</span></td>
+      <td><div class="vehicle-cell">
+        <div class="vehicle-thumb"><i class="ti ti-car"></i></div>
+        <div><div class="vehicle-name">${o.vehicle}</div><div class="vehicle-type">${o.type}</div></div>
+      </div></td>
+      <td><div class="flag-cell"><span class="flag">🇨🇳</span>${o.origin}</div></td>
+      <td><div class="flag-cell"><span class="flag">${destFlags[o.dest]||'🌍'}</span>${o.dest}</div></td>
+      <td>${badgeMap[o.status]}</td>
+      <td><div class="progress-cell">
+        <div class="prog-label">${o.progress}%</div>
+        <div class="prog-bar"><div class="prog-fill ${o.status}" style="width:${o.progress}%"></div></div>
+      </div></td>
+      <td><div class="eta-cell"><div class="eta-date">${o.eta}</div></div></td>
+      <td><div class="value-cell">${o.value}</div></td>
+      <td><div class="action-btns">
+        <button class="icon-btn" title="View details"><i class="ti ti-eye"></i></button>
+        <button class="icon-btn" title="Edit order"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn" title="More"><i class="ti ti-dots-vertical"></i></button>
+      </div></td>
+    </tr>
+  `).join('');
+  const s=(page-1)*perPage+1;
+  const e=Math.min(page*perPage,total);
+  document.getElementById('pageInfo').textContent=total?`Showing ${s}–${e} of ${total} orders`:'No orders found';
+  const pb=document.getElementById('pageBtns');
+  pb.innerHTML='';
+  const btn=(label,pg,active)=>{
+    const b=document.createElement('button');
+    b.className='page-btn'+(active?' active':'');
+    b.innerHTML=label;
+    b.onclick=()=>{page=pg;renderTable()};
+    pb.appendChild(b);
+  };
+  if(page>1) btn('<i class="ti ti-chevron-left" style="font-size:12px"></i>',page-1,false);
+  for(let i=1;i<=totalPages;i++) btn(i,i,i===page);
+  if(page<totalPages) btn('<i class="ti ti-chevron-right" style="font-size:12px"></i>',page+1,false);
+}
+
+renderTable();
+</script>
+</body>
+</html>
