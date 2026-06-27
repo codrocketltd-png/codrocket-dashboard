@@ -1,0 +1,25 @@
+{
+  "name": "codrocket-video",
+  "version": "1.0.0",
+  "description": "Remotion video project for CodRocket — Car Shipping",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio",
+    "studio": "remotion studio",
+    "render": "remotion render CodRocketPromo out/codrocket-promo.mp4",
+    "render:still": "remotion still CodRocketPromo out/codrocket-still.png",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/google-fonts": "4.0.484",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.484"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.484",
+    "@types/react": "19.0.0",
+    "@types/web": "0.0.166",
+    "typescript": "5.7.3"
+  }
+}
